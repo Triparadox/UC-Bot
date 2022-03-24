@@ -44,11 +44,13 @@ class Level(commands.Cog):
             xp_generated = 30;
 
         #Looking up author's database profile
-        if (collection.find({"user_id": author_id}) is False):
-            userData = {"user_id":author_id, "user_xp":xp_generated}
-            collection.insert_one(userData)
+        userData = collection.find_one({"user_id": author_id})
+        #UserData exists
+        if(userData):
+            collection.update_one({"user_id":author_id}, {"$inc":{"user_xp":xp_generated}})
+        #UserData does not exist
         else:
-            collection.update_one({"user_id": author_id}, {"$inc": {"user_xp": xp_generated}})
+            collection.insert_one({"user_id":author_id, "user_xp":xp_generated})
 
 
 def setup(client):

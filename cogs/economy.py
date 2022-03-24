@@ -18,6 +18,7 @@ class Economy(commands.Cog):
     async def on_ready(self):
         print("Economy system is online.")
         time.sleep(0.25)
+
     
     @commands.command(pass_context = True)
     async def balance(self, ctx):
@@ -28,25 +29,23 @@ class Economy(commands.Cog):
         db = cluster["UCBot"]
         collection = db["database"]
 
+        #Author's Identity
+        author_id = ctx.author.id
+        
         #Currency symbol
         currency_symbol = discord.utils.get(self.client.emojis, name='Cash')
 
         #Looking up author's database profile
-        author_id = ctx.author.id
+        userData = collection.find_one({"user_id": author_id})
         
-        #user_point = false
-        if(collection.find({"user_id": author_id}, {"user_daily_time": {"$exist": True}}) is False):
-            collection.update_one({"user_id": author_id}, {"$set": {"user_point": 0}}, False, True)
-            userData = collection.find({"user_id": author_id})
-            point_balance = userData["user_point"]
-            outputMsg = "Available balance: {0}{1}".format(point_balance, currency_symbol)
+        #UserData has user_point
+        if "user_point" in userData:
+            outputMsg = "You have {0} {1}".format(userData["user_point"], currency_symbol)
             await ctx.send(outputMsg)
-        #user_point = true
+        #UserData do not have user_point
         else:
-            userData = collection.find({"user_id": author_id})
-            point_balance = userData["user_point"]
-            outputMsg = "Available balance: {0}{1}".format(point_balance, currency_symbol)
-            await ctx.send(outputMsg)
+            await ctx.send("You have nothing. Perhaps try using $daily command to earn some.")
+            
     
     @commands.command(pass_context = True)
     async def daily(self, ctx):
@@ -57,6 +56,9 @@ class Economy(commands.Cog):
         db = cluster["UCBot"]
         collection = db["database"]
 
+        #Author's Identity
+        author_id = ctx.author.id
+        
         #Currency symbol
         currency_symbol = discord.utils.get(self.client.emojis, name='Cash')
 
@@ -74,41 +76,37 @@ class Economy(commands.Cog):
         currentTime = str(currentDay + currentMonth + currentYear)
 
         #Looking up author's database profile
-        author_id = ctx.author.id
-        
-        #user_profile = false
-        if (collection.find({"user_id": author_id}) is False):
-            userData = {"user_id": author_id, "user_point": gain, "user_daily_time": currentTime}
-            collection.insert_one(userData)
-            outputMsg = 'You have been awarded {0}.'.format(gain, currency_symbol)
-            await ctx.send(outputMsg)
-        #user_profile = true
-        else:
-            #user_daily_time = false
-            if(collection.find({"user_id": author_id}, {"user_daily_time": {"$exist": True}}) is False):
-                #user_point = false
-                if(collection.find({"user_id": author_id}, {"user_point": {"$exist": True}}) is False):
-                    collection.update_one({"user_id": author_id}, {"$set": {"user_point": gain}}, False, True)
-                    collection.update_one({"user_id": author_id}, {"$set": {"user_daily_time": currentTime}}, False, True)
-                    outputMsg = 'You have been awarded {0} {1}.'.format(gain, currency_symbol)
-                    await ctx.send(outputMsg)
-                    await ctx.send("Here again")
-                #user_point = true
+        userData = collection.find_one({"user_id": author_id})
+        #UserData exists
+        if (userData):
+            #UserData has user_point
+            if "user_point" in userData:
+                #UserData has user_daily_time
+                if "user_daily_time" in userData:
+                    #Request Denied: user has claimed reward today
+                    
+                    if(userData["user_daily_time"] == currentTime):
+                        await ctx.send("You may only claim daily reward once per day.")
+                    #Request Approved: user has not claimed reward today
+                    else:
+                        collection.update_one({"user_id": author_id}, {"$set":{"user_daily_time":currentTime}, "$inc":{"user_point":gain}})
+                        outputMsg = "You have been granted {0} {1}.".format(gain, currency_symbol)
+                        await ctx.send(outputMsg)
+                #UserData does not have user_daily_time
                 else:
-                    collection.update_one({"user_id": author_id}, {"$inc": {"user_point": gain}}, False, True)
-                    collection.update_one({"user_id": author_id}, {"$set": {"user_daily_time": currentTime}}, False, True)
-            #user_daily_time = true
+                    collection.update_one({"user_id":author_id}, {"$set":{"user_daily_time":currentTime}, "$inc":{"user_point":gain}})
+                    outputMsg = "You have been granted {0} {1}.".format(gain, currency_symbol)
+                    await ctx.send(outputMsg)
+            #UserData does not have user_point
             else:
-                #User has claimed daily reward recently. Reward is not generated
-                if(collection.find({"user_id": author_id}, {"user_daily_time": currentTime})):
-                    await ctx.send("You may only claim reward once every day.")
-                #User has not claimed daily reward recently. Reward is generated
-                else:
-                    collection.update_one({"user_id": author_id}, {"$inc": {"user_point": gain}})
-                    collection.update_one({"user_id": author_id}, {"$set": {"user_daily_time": currentTime}}, False, True)
-                    outputMsg = 'You have been awarded {0} {1}.'.format(gain, currency_symbol)
-                    await ctx.send(outputMsg)
-
+                collection.update_one({"user_id":author_id}, {"$set":{"user_daily_time":currentTime}})
+                collection.update_one({"user_id":author_id}, {"$set":{"user_point":gain}})
+                outputMsg = "You have been granted {0} {1}.".format(gain, currency_symbol)
+                await ctx.send(outputMsg)
+        #UserData does not exist
+        else:
+            await ctx.send("Please send at least one message first.")
+                
 
 def setup(client):
     client.add_cog(Economy(client))

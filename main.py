@@ -1,6 +1,6 @@
-#UC Bot v.1.1.0
+#UC Bot v.1.2.0
 #Author: Triparadox C.
-#Version changelog: Member XP functionality is active, and data is stored in MongoDB. Help page is updated. Currently working on economy functions and level tiers.
+#Version changelog: Economy script is functional. Two features (daily bonus and balance check) have been implemented.
 
 
 #Import important scripts and plugins
