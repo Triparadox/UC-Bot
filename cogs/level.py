@@ -40,13 +40,15 @@ class Level(commands.Cog):
         xp_generated = int(msg_length / 10)
         if xp_generated < 1:
             xp_generated = 1
+        elif xp_generated > 30:
+            xp_generated = 30;
 
         #Looking up author's database profile
         if (collection.find({"user_id": author_id}) is False):
             userData = {"user_id":author_id, "user_xp":xp_generated}
             collection.insert_one(userData)
         else:
-            collection.find_one_and_update({"user_id":author_id}, {"$inc": {"user_xp":xp_generated}})
+            collection.update_one({"user_id": author_id}, {"$inc": {"user_xp": xp_generated}})
 
 
 def setup(client):
