@@ -40,11 +40,16 @@ class Economy(commands.Cog):
         
         #UserData has user_point
         if "user_point" in userData:
-            outputMsg = "You have {0} {1}".format(userData["user_point"], currency_symbol)
-            await ctx.send(outputMsg)
+            BalanceInfo = discord.Embed(title="__{0}'s Account__".format(ctx.author.name), description="", color=0x97FEEF)
+            BalanceInfo.set_thumbnail(url=ctx.author.avatar_url)
+            BalanceInfo.add_field(name="Available Server Point", value="{0} {1}".format(userData["user_point"], currency_symbol))
+            await ctx.send(embed=BalanceInfo)
         #UserData do not have user_point
         else:
-            await ctx.send("You have nothing. Perhaps try using $daily command to earn some.")
+            BalanceInfo = discord.Embed(title="__Account - {0}__".format(ctx.author.name), description="", color=0x97FEEF)
+            BalanceInfo.set_thumbnail(url=ctx.author.avatar_url)
+            BalanceInfo.add_field(name="Available Server Point", value="{0} {1}".format(userData["user_point"], currency_symbol))
+            await ctx.send(embed=BalanceInfo)
             
     
     @commands.command(pass_context = True)

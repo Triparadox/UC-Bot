@@ -1,6 +1,6 @@
-#UC Bot v.1.2.0
+#UC Bot v.1.2.1
 #Author: Triparadox C.
-#Version changelog: Economy script is functional. Two features (daily bonus and balance check) have been implemented.
+#Version changelog: Added user_name into database, and improved bot's Check Balance output using Discord Embed.
 
 
 #Import important scripts and plugins

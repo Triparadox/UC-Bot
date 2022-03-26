@@ -18,11 +18,13 @@ class Level(commands.Cog):
     def __init__(self, client):
         self.client = client
 
+    
     @commands.Cog.listener()
     async def on_ready(self):
         print("Level system is online.")
         time.sleep(0.25)
 
+    
     @commands.Cog.listener()
     async def on_message(self, message):
         #Establishing MongoDB connection
@@ -32,9 +34,10 @@ class Level(commands.Cog):
         db = cluster["UCBot"]
         collection = db["database"]
 
-        #Obtaining information: author and length of message
+        #Obtaining information: author, length of message, and user name
         author_id = message.author.id
         msg_length = len(message.content)
+        author_name = message.author.name
 
         #Calculating XP generated from message
         xp_generated = int(msg_length / 10)
@@ -48,10 +51,11 @@ class Level(commands.Cog):
         #UserData exists
         if(userData):
             collection.update_one({"user_id":author_id}, {"$inc":{"user_xp":xp_generated}})
+            collection.update_one({"user_id":author_id}, {"$set":{"user_name":author_name}})
         #UserData does not exist
         else:
-            collection.insert_one({"user_id":author_id, "user_xp":xp_generated})
-
+            collection.insert_one({"user_id":author_id, "user_name":author_name, "user_xp":xp_generated})
+        
 
 def setup(client):
     client.add_cog(Level(client))
