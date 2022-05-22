@@ -13,10 +13,11 @@ class Poll(commands.Cog):
         time.sleep(0.25)
 
     @commands.command(pass_context = True)
-    async def poll(self, ctx):
+    async def poll(self, ctx, channel: discord.TextChannel):
         #The author of the command.
         author = ctx.author
         avatar_url = str(ctx.author.avatar_url)
+
         #Method to make sure the bot only recognizes the same user during the interaction.
         def checkAuthor(m):
             return m.author == author
@@ -29,6 +30,7 @@ class Poll(commands.Cog):
                 sentence = sentence + str(i) + ')\t' + x + '\n'
                 i = i + 1
             return sentence
+
         #Message record array for deletion.
         msg_history = []
         
@@ -79,7 +81,7 @@ class Poll(commands.Cog):
         PollMsg.set_thumbnail(url=str(avatar_url))
         PollMsg.add_field(name = '\u200b', value = '{0}'.format(poll_content), inline = False)
         PollMsg.add_field(name = '\u200b', value = '{0}'.format(printMethod(option_description)), inline = False)
-        poll_msg = await ctx.send(embed = PollMsg)
+        poll_msg = await channel.send(embed = PollMsg)
 
         #Adding emoji to the poll.
         i = 0

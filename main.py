@@ -1,6 +1,6 @@
-#UC Bot v.1.2.1
+#UC Bot v.1.2.2
 #Author: Triparadox C.
-#Version changelog: Added user_name into database, and improved bot's Check Balance output using Discord Embed.
+#Version changelog: Improved bot's poll feature. Now allows for a target channel where poll is published.
 
 
 #Import important scripts and plugins
